@@ -1,22 +1,8 @@
-.hex-container {
-  margin-top: 200px;
-  display: flex;
-  width: 500px;
-  height: 100px;
-  overflow: auto;
-}
-
-.hex-container > .hex:nth-child(-n + 3),
-.hex-container > .hex:nth-last-child(-n + 2) {
-  visibility: hidden;
-}
-
 .hex {
-  flex: none;
   height: 100px;
   width: 100px;
   background: purple;
   border: 1px solid white;
   position: absolute;
-  transition: transform 0.4s;
+  transition: transform 0.0166s, opacity 1s;
 }

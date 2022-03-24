@@ -9,7 +9,9 @@ interface AppState {
 }
 
 class App extends Component<AppProps, AppState> {
+  containerRef: HTMLDivElement;
   intersectionObserver: IntersectionObserver;
+  scrollTop = 0;
 
   constructor(props) {
     super(props);
@@ -17,51 +19,53 @@ class App extends Component<AppProps, AppState> {
       name: 'React',
     };
     this.observeIntersection = this.observeIntersection.bind(this);
-    this.step = this.step.bind(this);
+    this.onIntersect = this.onIntersect.bind(this);
+  }
+
+  componentDidMount() {
+    this.observeIntersection();
+    document.addEventListener('wheel', (e) => {
+      console.log(e.composed);
+      this.scrollTop += e.deltaY;
+      if (this.scrollTop > 250) {
+        this.scrollTop = 250;
+      } else if (this.scrollTop < -250) {
+        this.scrollTop = -250;
+      }
+    });
   }
 
   componentWillUnmount() {
     this.intersectionObserver.disconnect();
   }
 
-  onIntersect<E extends Element>(root: E) {
-    const children = Array.from(root.children).slice(3, 8);
+  onIntersect() {
+    const children = Array.from(this.containerRef.children);
     const center = 2;
-    const rootScrollTop = root.scrollTop - 200;
-    children.map((e, i) => {
+    const rootScrollTop = this.scrollTop;
+    children.map((e, hexIndex) => {
       const div = e as HTMLDivElement;
-      const centerIndexOffset = i - center;
+      const centerIndexOffset = hexIndex - center;
       const centerOffset = centerIndexOffset * -100;
-      const xPosition = 100 * i + rootScrollTop;
+      const marginLeft = 300;
+      const hexWidth = 100;
+      const xPosition = marginLeft + hexWidth * hexIndex + rootScrollTop;
       const yPosition = centerOffset - rootScrollTop;
-      div.style.transform = `translate(${xPosition}px, ${yPosition}px) scale(${
-        Math.abs(yPosition) > 200 ? 0 : 1
-      })`;
+      const shouldDisappear = Math.abs(yPosition) > 250;
+      div.style.transform = `translate(${xPosition}px, ${yPosition}px)`;
+      div.style.opacity = shouldDisappear ? '0' : '1';
     });
   }
 
-  step<E extends Element>(root: E) {
-    this.onIntersect(root);
-    requestAnimationFrame(() => this.step(root));
-  }
-
-  observeIntersection<E extends Element>(root: E) {
-    root.scroll(0, 200);
-    this.step(root);
+  observeIntersection() {
+    this.onIntersect();
+    requestAnimationFrame(this.observeIntersection.bind(this));
   }
 
   render() {
     return (
-      <div ref={this.observeIntersection} className="hex-container">
-        <div
-          style={{
-            zIndex: 2,
-            width: '900px',
-            height: '500px',
-            background: 'transparent',
-          }}
-        ></div>
-        {Array(9)
+      <div ref={(ref) => (this.containerRef = ref)}>
+        {Array(5)
           .fill(undefined)
           .map((_, i) => (
             <div key={i} className={cn('hex')} />
