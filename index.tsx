@@ -54,7 +54,7 @@ class App extends Component<AppProps, AppState> {
     const templateScrollTop = this.scrollTop + e.deltaY;
     const sign = Math.sign(templateScrollTop);
     this.scrollTop =
-      Math.abs(templateScrollTop) > 250 ? 250 * sign : templateScrollTop;
+      Math.abs(templateScrollTop) > 200 ? 200 * sign : templateScrollTop;
   }
 
   onIntersect() {
@@ -66,8 +66,10 @@ class App extends Component<AppProps, AppState> {
       const topOffset = (this.elementsCount - hexIndex) * this.hexSize;
       const xPosition = marginLeft + this.hexSize * hexIndex + rootScrollTop;
       const yPosition = topOffset - rootScrollTop;
-      const shouldDisappear = yPosition > 550 || yPosition < 0;
-      div.style.transform = `translate(${xPosition}px, ${yPosition}px)`;
+      const shouldDisappear = yPosition > 500 || yPosition < 0;
+      div.style.transform = `translate(${xPosition}px, ${yPosition}px) rotate3d(1, 1, 1, ${
+        360 * 5 * (this.scrollTop / 500)
+      }deg)`;
       div.style.opacity = shouldDisappear ? '0' : '1';
     });
   }

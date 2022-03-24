@@ -4,5 +4,7 @@
   background: purple;
   border: 1px solid white;
   position: absolute;
+  backface-visibility: visible;
   transition: transform 0.0166s, opacity 1s;
+  transform: translate(3px, 5px, 10px);
 }
