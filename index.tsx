@@ -12,46 +12,62 @@ class App extends Component<AppProps, AppState> {
   containerRef: HTMLDivElement;
   intersectionObserver: IntersectionObserver;
   scrollTop = 0;
+  elementsCount = 5;
+  hexSize = 100;
 
   constructor(props) {
     super(props);
-    this.state = {
-      name: 'React',
-    };
     this.observeIntersection = this.observeIntersection.bind(this);
     this.onIntersect = this.onIntersect.bind(this);
+    this.onWheel = this.onWheel.bind(this);
   }
 
   componentDidMount() {
     this.observeIntersection();
-    document.addEventListener('wheel', (e) => {
-      console.log(e.composed);
-      this.scrollTop += e.deltaY;
-      if (this.scrollTop > 250) {
-        this.scrollTop = 250;
-      } else if (this.scrollTop < -250) {
-        this.scrollTop = -250;
-      }
-    });
+    document.addEventListener('wheel', this.onWheel);
   }
 
   componentWillUnmount() {
     this.intersectionObserver.disconnect();
   }
 
+  /**
+   *
+   * childrenCount = 3
+   *
+   *                  |yPosition  @@@@@@
+   *                  |           @    @
+   *                  |           @    @ <------hexIndex=2
+   *                  |           @@@@@@
+   *                  |     @@@@@@
+   *     marginLeft   |     @    @
+   * <--------------->|     @    @ <----- hexIndex=1
+   *                  ↓     @@@@@@
+   *                ↑ @@@@@@
+   *                | @    @
+   *        hexSize | @    @ <----- hexIndex=0
+   *                ↓ @@@@@@
+   *                  <---->
+   *                  hexSize
+   */
+
+  onWheel(e: WheelEvent) {
+    const templateScrollTop = this.scrollTop + e.deltaY;
+    const sign = Math.sign(templateScrollTop);
+    this.scrollTop =
+      Math.abs(templateScrollTop) > 250 ? 250 * sign : templateScrollTop;
+  }
+
   onIntersect() {
     const children = Array.from(this.containerRef.children);
-    const center = 2;
     const rootScrollTop = this.scrollTop;
     children.map((e, hexIndex) => {
       const div = e as HTMLDivElement;
-      const centerIndexOffset = hexIndex - center;
-      const centerOffset = centerIndexOffset * -100;
       const marginLeft = 300;
-      const hexWidth = 100;
-      const xPosition = marginLeft + hexWidth * hexIndex + rootScrollTop;
-      const yPosition = centerOffset - rootScrollTop;
-      const shouldDisappear = Math.abs(yPosition) > 250;
+      const topOffset = (this.elementsCount - hexIndex) * this.hexSize;
+      const xPosition = marginLeft + this.hexSize * hexIndex + rootScrollTop;
+      const yPosition = topOffset - rootScrollTop;
+      const shouldDisappear = yPosition > 550 || yPosition < 0;
       div.style.transform = `translate(${xPosition}px, ${yPosition}px)`;
       div.style.opacity = shouldDisappear ? '0' : '1';
     });
@@ -65,10 +81,12 @@ class App extends Component<AppProps, AppState> {
   render() {
     return (
       <div ref={(ref) => (this.containerRef = ref)}>
-        {Array(5)
+        {Array(this.elementsCount)
           .fill(undefined)
           .map((_, i) => (
-            <div key={i} className={cn('hex')} />
+            <div key={i} className="hex">
+              {i}
+            </div>
           ))}
       </div>
     );
